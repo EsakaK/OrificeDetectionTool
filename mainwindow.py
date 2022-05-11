@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
+        MainWindow.setObjectName("根管口检测")
         MainWindow.resize(927, 535)
         MainWindow.setMinimumSize(QtCore.QSize(927, 535))
         MainWindow.setMaximumSize(QtCore.QSize(927, 535))
