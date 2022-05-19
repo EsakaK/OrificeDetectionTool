@@ -21,7 +21,7 @@ def union_image_mask(image_path, mask_path):
 
 def generate_mask_img(mask):
     mask_img = np.zeros((mask.shape[0],mask.shape[1],3),dtype=np.uint8)
-    mask_img[mask==255] = (0,0,180)
+    mask_img[mask==255] = (200,0,0)
     return mask_img
 
 
