@@ -2,12 +2,12 @@ import sys
 from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from mainwindow import Ui_MainWindow
+from video_object import VideoWindow
 
 import cv2
 import numpy as np
 from lib.Detector import Detector
-from lib.trheads import DIThread,PIThread
-
+from lib.trheads import DIThread, PIThread, EmittingStr
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -16,6 +16,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.detector = Detector()
         self.detector.load_model(r'E:\Git_repos\OrificeDetectionTool\snapshots\Net_epoch_150.pth')
+        sys.stdout = EmittingStr(textWritten=self.outputWritten)
+        # sys.stderr = EmittingStr(textWritten=self.outputWritten)
+        self.video_window = VideoWindow()
         self.slot_init()
 
     def slot_init(self):
@@ -24,6 +27,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionopen_file.triggered.connect(self.choose_file)
         self.actionopen_director.triggered.connect(self.process_imgs)
         self.actionload_model.triggered.connect(self.choose_model)
+        self.video_btn.clicked.connect(self.open_video_window)
+
+    # 以下为辅助方法
+    def outputWritten(self, text):
+        cursor = self.textBrowser.textCursor()
+        cursor.movePosition(QtGui.QTextCursor.End)
+        cursor.insertText(text)
+        self.textBrowser.setTextCursor(cursor)
+        self.textBrowser.ensureCursorVisible()
 
     # 以下为槽函数
     def detect_img(self):
@@ -42,12 +54,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def process_imgs(self):
         fileName = QFileDialog.getExistingDirectory(self,
-                                                              "选取文件",
-                                                              "./"
-                                                              )
+                                                    "选取文件",
+                                                    "./"
+                                                    )
         print("start scan folder")
         # 传到Thread
-        self.piThread = PIThread(fileName,model=self.detector)
+        self.piThread = PIThread(fileName, model=self.detector)
         self.piThread.start()
         print("over processing")
 
@@ -75,6 +87,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         o_img = QtGui.QPixmap(fileName)
         self.o_img.setPixmap(o_img)
         self.o_img.setScaledContents(True)
+
+    def open_video_window(self):
+        self.video_window.show()
 
 
 if __name__ == '__main__':

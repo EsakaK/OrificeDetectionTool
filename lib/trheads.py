@@ -1,5 +1,5 @@
 import os
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread,QObject
 import numpy as np
 from PIL import Image
 import cv2
@@ -44,3 +44,10 @@ class PIThread(QThread):
                     os.makedirs(dir)
 
                 out_img.save(os.path.join(dir,file))
+
+
+class EmittingStr(QObject):
+    textWritten = pyqtSignal(str)  # 定义一个发送str的信号
+
+    def write(self, text):
+        self.textWritten.emit(str(text))
