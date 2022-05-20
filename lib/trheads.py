@@ -15,16 +15,14 @@ class DIThread(QThread):
         self.model = model
 
     def run(self):
-        print('image load in.')
         r_img = self.model.write_frame(self.o_img)
         r_img = Image.fromarray(r_img)
         self.trigger.emit(r_img)
-        print('image emit over.')
 
 
 class PIThread(QThread):
     """用于处理文件夹所有文件的线程"""
-
+    trigger = pyqtSignal(int)
     def __init__(self, path, model):
         super(PIThread, self).__init__()
         self.path = path
@@ -32,8 +30,9 @@ class PIThread(QThread):
 
     def run(self):
         file_list = os.listdir(path=self.path)
-        print(self.path)
-        for file in file_list:
+        file_list = [file for file in file_list if ".jpg" in file ]
+        length = len(file_list)
+        for index,file in enumerate(file_list):
             if ".jpg" in file:
                 img = cv2.imread(os.path.join(self.path,file),cv2.IMREAD_COLOR)
                 img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
@@ -45,6 +44,8 @@ class PIThread(QThread):
                     os.makedirs(dir)
 
                 out_img.save(os.path.join(dir,file))
+                self.trigger.emit(int(100*((index+1)/length)))
+        print("over processing.\nFiles saved in {}\n".format(self.path + '\\results'))
 
 
 class EmittingStr(QObject):

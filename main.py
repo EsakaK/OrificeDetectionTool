@@ -3,6 +3,7 @@ from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from mainwindow import Ui_MainWindow
 from video_object import VideoWindow
+from process_object import ProcessWindow
 
 import cv2
 import numpy as np
@@ -19,6 +20,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         sys.stdout = EmittingStr(textWritten=self.outputWritten)
         # sys.stderr = EmittingStr(textWritten=self.outputWritten)
         self.video_window = VideoWindow(self.detector)
+        self.process_window = ProcessWindow()
         self.slot_init()
 
     def slot_init(self):
@@ -27,7 +29,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionopen_file.triggered.connect(self.choose_file)
         self.actionopen_director.triggered.connect(self.process_imgs)
         self.actionload_model.triggered.connect(self.choose_model)
-        self.video_btn.clicked.connect(self.open_video_window)
+        # self.video_btn.clicked.connect(self.open_video_window)
+        self.actionopen_video.triggered.connect(self.open_video_window)
 
     # 以下为辅助方法
     def outputWritten(self, text):
@@ -50,18 +53,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.diThread = DIThread(o_img, self.detector)
         self.diThread.start()
         self.diThread.trigger.connect(self.set_pixmap)
-        print("detecting over")
+        print("detecting over.\n")
 
     def process_imgs(self):
         fileName = QFileDialog.getExistingDirectory(self,
                                                     "选取文件",
                                                     "./"
                                                     )
-        print("start scan folder")
-        # 传到Thread
-        self.piThread = PIThread(fileName, model=self.detector)
-        self.piThread.start()
-        print("over processing")
+        if fileName != "":
+            self.process_window.show()
+            self.process_window.progressBar.setValue(0)
+            print("start scan folder.")
+            # 传到Thread
+            self.piThread = PIThread(fileName, model=self.detector)
+            self.piThread.start()
+            self.piThread.trigger.connect(self.set_process_bar)
+
 
     def set_pixmap(self, img):
         img = img.convert("RGBA")
@@ -71,22 +78,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.r_img.setPixmap(r_img)  # 设置到r_img上
         self.r_img.setScaledContents(True)
 
+    def set_process_bar(self,val):
+        self.process_window.progressBar.setValue(val)
+
     def choose_model(self):
         fileName, filetype = QFileDialog.getOpenFileName(self,
                                                          "选取文件",
                                                          "./",
                                                          "pth (*.pth)")  # 设置文件扩展名过滤,注意用双分号间隔
-        self.detector.load_model(fileName)
-        print('{}--load over'.format(fileName))
+        if fileName != "":
+            self.detector.load_model(fileName)
+            print('model "{}"--load over'.format(fileName))
 
     def choose_file(self):
         fileName, filetype = QFileDialog.getOpenFileName(self,
                                                          "选取文件",
                                                          "./",
                                                          "jpg (*.jpg);;png (*.png)")  # 设置文件扩展名过滤,注意用双分号间隔
-        o_img = QtGui.QPixmap(fileName)
-        self.o_img.setPixmap(o_img)
-        self.o_img.setScaledContents(True)
+        if fileName != "":
+            o_img = QtGui.QPixmap(fileName)
+            self.o_img.setPixmap(o_img)
+            self.o_img.setScaledContents(True)
 
     def open_video_window(self):
         self.video_window.show()
