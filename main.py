@@ -18,7 +18,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.detector.load_model(r'E:\Git_repos\OrificeDetectionTool\snapshots\Net_epoch_150.pth')
         sys.stdout = EmittingStr(textWritten=self.outputWritten)
         # sys.stderr = EmittingStr(textWritten=self.outputWritten)
-        self.video_window = VideoWindow()
+        self.video_window = VideoWindow(self.detector)
         self.slot_init()
 
     def slot_init(self):
@@ -45,7 +45,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ptr = imgptr.constBits()
         ptr.setsize(imgptr.byteCount())
         mat = np.array(ptr).reshape(imgptr.height(), imgptr.width(), 4)
-        o_img = cv2.cvtColor(mat, cv2.COLOR_BGR2RGB)  # 得到cv格式的原始图片
+        o_img = cv2.cvtColor(mat, cv2.COLOR_BGR2RGB)  # 得到cv格式的原始RGB图片
         # 传到Thread
         self.diThread = DIThread(o_img, self.detector)
         self.diThread.start()

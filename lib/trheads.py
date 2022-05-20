@@ -15,10 +15,11 @@ class DIThread(QThread):
         self.model = model
 
     def run(self):
+        print('image load in.')
         r_img = self.model.write_frame(self.o_img)
         r_img = Image.fromarray(r_img)
         self.trigger.emit(r_img)
-        print('emit over')
+        print('image emit over.')
 
 
 class PIThread(QThread):

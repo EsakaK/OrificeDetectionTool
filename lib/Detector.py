@@ -56,7 +56,7 @@ class Detector(object):
         :return:
         """
         res = res * 255
-        ret, thresh = cv2.threshold(res, 50, 255, 0)
+        ret, thresh = cv2.threshold(res, 230, 255, 0)
         mask_img = generate_mask_img(thresh)
         img_with_with_mask = mask_img * 0.8 + rgb_image
         img_with_with_mask[img_with_with_mask>255] = 255
