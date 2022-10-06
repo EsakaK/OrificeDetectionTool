@@ -1,3 +1,2 @@
 # OrificeDetectionTool
-用于牙齿根管口定位
-> 写完再写README
+用于牙齿根管口定位的演示
